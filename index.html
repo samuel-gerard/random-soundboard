@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chaos Soundboard YouTube</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --accent: #ff0000;
+            --text: #ffffff;
+            --text-dim: #b3b3b3;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        h1 { text-align: center; color: var(--accent); }
+
+        .panel {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        input, button {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            font-size: 14px;
+        }
+
+        input {
+            background: #333;
+            color: white;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #444; }
+        button.active { background: #28a745; }
+
+        .sounds-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .sound-badge {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--accent);
+        }
+
+        .sound-badge button {
+            padding: 2px 8px;
+            background: #dc3545;
+            font-size: 12px;
+        }
+
+        /* Cache le lecteur YT requis pour l'API */
+        #yt-player-container {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔊 Chaos Soundboard Random</h1>
+
+    <!-- SECTION AJOUT DE SON -->
+    <div class="panel">
+        <h3>1. Ajouter un son</h3>
+        <div class="form-group">
+            <input type="text" id="yt-url" placeholder="Lien Vidéo YouTube (Ex: https://youtu.be/...)" style="flex: 2;">
+        </div>
+        <div class="form-group">
+            <input type="number" id="start-time" placeholder="Début (en secondes)" min="0">
+            <input type="number" id="end-time" placeholder="Fin (en secondes)" min="1">
+            <button id="add-sound-btn">Ajouter à la Soundboard</button>
+        </div>
+    </div>
+
+    <!-- SECTION CONFIGURATION DU RANDOM -->
+    <div class="panel">
+        <h3>2. Configurer la machine à chaos</h3>
+        <div class="form-group">
+            <label style="align-self: center;">Intervalle du Random :</label>
+            <input type="number" id="interval-min" placeholder="Min (sec)" value="2" style="max-width: 100px;">
+            <input type="number" id="interval-max" placeholder="Max (sec)" value="7" style="max-width: 100px;">
+            <button id="start-chaos-btn">DÉMARRER LE CHAOS</button>
+        </div>
+    </div>
+
+    <!-- SOUNDBOARD LIST -->
+    <div class="panel">
+        <h3>Mes Sons (<span id="sound-count">0</span>)</h3>
+        <div class="sounds-list" id="sounds-container"></div>
+    </div>
+</div>
+
+<!-- L'Iframe YouTube invisible qui va gérer l'audio -->
+<div id="yt-player-container">
+    <div id="player"></div>
+</div>
+
+<script>
+    // Chargement asynchrone de l'API YouTube
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    let player;
+    let sounds = [];
+    let chaosTimer = null;
+    let stopSoundTimer = null;
+
+    // Initialisation du lecteur YouTube
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+            height: '200',
+            width: '200',
+            videoId: '', 
+            playerVars: {
+                'playsinline': 1,
+                'controls': 0
+            },
+            events: {
+                'onReady': onPlayerReady
+            }
+        });
+    }
+
+    function onPlayerReady(event) {
+        console.log("L'API YouTube est prête ! En avant la musique.");
+    }
+
+    // Extraire l'ID de la vidéo YouTube depuis l'URL
+    function extractVideoId(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    // Ajouter un son à la liste
+    document.getElementById('add-sound-btn').addEventListener('click', () => {
+        const url = document.getElementById('yt-url').value;
+        const start = parseInt(document.getElementById('start-time').value);
+        const end = parseInt(document.getElementById('end-time').value);
+        const videoId = extractVideoId(url);
+
+        if (!videoId || isNaN(start) || isNaN(end) || start >= end) {
+            alert("Remplis correctement les champs ! (Le temps de fin doit être supérieur au début)");
+            return;
+        }
+
+        const sound = { id: Date.now(), videoId, start, end };
+        sounds.push(sound);
+        
+        // Reset inputs
+        document.getElementById('yt-url').value = '';
+        document.getElementById('start-time').value = '';
+        document.getElementById('end-time').value = '';
+
+        updateSoundsUI();
+    });
+
+    // Mettre à jour l'affichage des sons
+    function updateSoundsUI() {
+        const container = document.getElementById('sounds-container');
+        document.getElementById('sound-count').innerText = sounds.length;
+        container.innerHTML = '';
+
+        sounds.forEach((sound, index) => {
+            const badge = document.createElement('div');
+            badge.className = 'sound-badge';
+            badge.innerHTML = `
+                <span>Son n°${index + 1} (${sound.start}s - ${sound.end}s)</span>
+                <button onclick="deleteSound(${sound.id})">X</button>
+            `;
+            container.appendChild(badge);
+        });
+    }
+
+    // Supprimer un son
+    function deleteSound(id) {
+        sounds = sounds.filter(s => s.id !== id);
+        updateSoundsUI();
+    }
+
+    // Jouer un son spécifique
+    function playSound(sound) {
+        if (!player) return;
+        
+        clearTimeout(stopSoundTimer); // Annule la coupure du son précédent si elle existait
+        
+        player.loadVideoById({
+            videoId: sound.videoId,
+            startSeconds: sound.start
+        });
+        player.playVideo();
+
+        // Couper le son à la fin de la durée définie
+        const duration = (sound.end - sound.start) * 1000;
+        stopSoundTimer = setTimeout(() => {
+            player.stopVideo();
+        }, duration);
+    }
+
+    // Gestion du mode Chaos (Boucle Random)
+    const startChaosBtn = document.getElementById('start-chaos-btn');
+    
+    startChaosBtn.addEventListener('click', () => {
+        if (chaosTimer) {
+            // STOP THE CHAOS
+            clearTimeout(chaosTimer);
+            clearTimeout(stopSoundTimer);
+            if(player) player.stopVideo();
+            chaosTimer = null;
+            startChaosBtn.innerText = "DÉMARRER LE CHAOS";
+            startChaosBtn.classList.remove('active');
+        } else {
+            // START THE CHAOS
+            if (sounds.length === 0) {
+                alert("Ajoute au moins un son avant de lancer le bordel !");
+                return;
+            }
+            startChaosBtn.innerText = "ARRÊTER LE CHAOS";
+            startChaosBtn.classList.add('active');
+            triggerNextRandomSound();
+        }
+    });
+
+    function triggerNextRandomSound() {
+        const min = parseInt(document.getElementById('interval-min').value) || 1;
+        const max = parseInt(document.getElementById('interval-max').value) || 5;
+        
+        // Sélection d'un son au hasard
+        const randomSound = sounds[Math.floor(Math.random() * sounds.length)];
+        playSound(randomSound);
+
+        // Calcul du prochain intervalle random (en ms)
+        const randomInterval = (Math.random() * (max - min) + min) * 1000;
+
+        // Planification du prochain son
+        chaosTimer = setTimeout(() => {
+            triggerNextRandomSound();
+        }, randomInterval);
+    }
+</script>
+
+</body>
+</html>
