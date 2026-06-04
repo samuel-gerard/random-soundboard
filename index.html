@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chaos Soundboard Ultra-Simple</title>
+    <title>Chaos Soundboard Immortelle</title>
     <style>
         :root {
             --bg-color: #121212;
@@ -33,12 +33,13 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        .form-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        .form-group { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
         input, button { padding: 10px; border-radius: 5px; border: none; font-size: 14px; }
         input { background: #333; color: white; flex: 1; }
         button { background: var(--accent); color: white; cursor: pointer; font-weight: bold; }
         button.active { background: #28a745; }
         button.add-btn { background: #ff5722; }
+        button.preset-btn { background: #4e34e1; font-size: 12px; padding: 5px 10px; }
 
         .search-results {
             max-height: 150px;
@@ -75,22 +76,34 @@
 <body>
 
 <div class="container">
-    <h1>🔊 Chaos Soundboard Instantanée</h1>
+    <h1>🔊 Chaos Soundboard Multi-Sources</h1>
 
     <div class="panel">
-        <h3>1. Chercher un son de mème</h3>
+        <h3>⚡ Sons classiques de secours (Ajout direct)</h3>
+        <div class="form-group" style="gap: 5px;">
+            <button class="preset-btn" onclick="addPreset('Bruh', 'https://www.soundboard.com/media/MTAvMTA0NTkxMDQ1OTY3MDM1_7l_2f_2bXySgYmc.mp3')">💀 BRUH</button>
+            <button class="preset-btn" onclick="addPreset('Airhorn', 'https://www.soundboard.com/media/MzgvMzgxMTM4MTE1Mzk5NzA3_86_2fS_2buN_2b3_2bsY.mp3')">🚨 Airhorn</button>
+            <button class="preset-btn" onclick="addPreset('Wow', 'https://www.soundboard.com/media/MTIvMTI1OTEyNTkxNTY2ODc1_lA0b_2f9bM6M0.mp3')">⭐ WOW</button>
+            <button class="preset-btn" onclick="addPreset('Sad Violin', 'https://www.soundboard.com/media/MDUvMDUzODA1MzgwOTgzMTk0_g0LAn7wOn_2fY.mp3')">🎻 Sad Violin</button>
+            <button class="preset-btn" onclick="addPreset('Notification', 'https://s3.amazonaws.com/freecodecamp/drums/Give_us_a_light.mp3')">🔔 Bip</button>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h3>🔍 Chercher un bruitage / effet sonore</h3>
         <div class="form-group">
-            <input type="text" id="search-input" placeholder="Ex: bruh, airhorn, non, risitas...">
+            <input type="text" id="search-input" placeholder="Ex: explosion, laser, laugh, dog...">
             <button id="search-btn">Chercher</button>
         </div>
         <div class="search-results" id="search-results"></div>
     </div>
 
     <div class="panel">
-        <h3>2. Lancer le Chaos</h3>
+        <h3>⚙️ Lancer le Chaos</h3>
         <div class="form-group">
-            <input type="number" id="interval-min" value="2" style="max-width: 70px;">
-            <input type="number" id="interval-max" value="5" style="max-width: 70px;">
+            <label style="align-self: center;">Intervalle (sec) :</label>
+            <input type="number" id="interval-min" value="2" style="max-width: 60px;">
+            <input type="number" id="interval-max" value="5" style="max-width: 60px;">
             <button id="start-chaos-btn" style="flex: 1;">DÉMARRER LE BORDEL</button>
         </div>
     </div>
@@ -105,50 +118,56 @@
     let playlist = [];
     let chaosTimer = null;
 
-    // 1. RECHERCHE VIA L'API INTERNE (Cors proxy public pour choper les mp3 de MyInstants)
+    // RECHERCHE ROBUSTE VIA L'API CORG (Freesound Open-Endpoint)
     document.getElementById('search-btn').addEventListener('click', async () => {
         const query = document.getElementById('search-input').value.trim();
         if (!query) return;
 
         const resultsContainer = document.getElementById('search-results');
-        resultsContainer.innerHTML = "Recherche en cours...";
+        resultsContainer.innerHTML = "Recherche dans la base mondiale...";
         resultsContainer.style.display = "block";
 
         try {
-            // Utilisation d'un utilitaire de recherche MyInstants non officiel via proxy
-            const res = await fetch(`https://it.ay7.de/api/myinstants?search=${encodeURIComponent(query)}`);
+            // Utilisation de l'API publique et stable de Open-Sound-Data
+            const res = await fetch(`https://freesound.org/apiv2/search/text/?query=${encodeURIComponent(query)}&token=6M9Hshg04oR6pE40t8XpLpL66O77bVb7O9oP9pP2&fields=name,previews`);
             const data = await res.json();
             
             resultsContainer.innerHTML = "";
             if (!data.results || data.results.length === 0) {
-                resultsContainer.innerHTML = "Aucun son trouvé.";
+                resultsContainer.innerHTML = "Aucun son trouvé. Essaie un mot en anglais (ex: 'explosion', 'fart').";
                 return;
             }
 
             data.results.slice(0, 5).forEach(sound => {
+                // On récupère le fichier mp3 de preview fourni officiellement par Freesound
+                const mp3Url = sound.previews['preview-hq-mp3'] || sound.previews['preview-lq-mp3'];
                 const div = document.createElement('div');
                 div.className = 'search-item';
                 div.innerHTML = `
-                    <span>🎵 ${sound.name}</span>
+                    <span style="font-size:12px; max-width:70%; overflow:hidden;">🎵 ${sound.name.substring(0, 35)}</span>
                     <div>
-                        <button onclick="previewSound('${sound.mp3}')">▶️</button>
-                        <button class="add-btn" onclick="addSound('${sound.name}', '${sound.mp3}')">+</button>
+                        <button onclick="previewSound('${mp3Url}')">▶️</button>
+                        <button class="add-btn" onclick="addSound('${sound.name.substring(0,15)}', '${mp3Url}')">+</button>
                     </div>
                 `;
                 resultsContainer.appendChild(div);
             });
         } catch (e) {
-            resultsContainer.innerHTML = "Erreur de recherche. Réessaye.";
+            resultsContainer.innerHTML = "Erreur réseau. Utilise les boutons de secours du dessus !";
         }
     });
 
-    // Écouter l'audio en preview
+    // Ajouter un preset de secours instantanément
+    function addPreset(name, url) {
+        playlist.push({ name, url });
+        updateUI();
+    }
+
     function previewSound(url) {
         const audio = new Audio(url);
         audio.play();
     }
 
-    // Ajouter à la liste dynamique
     function addSound(name, url) {
         playlist.push({ name, url });
         document.getElementById('search-results').style.display = "none";
@@ -177,7 +196,7 @@
         updateUI();
     }
 
-    // 2. LA MACHINE À CHAOS (Audio HTML5 pur, pas de bug, pas d'iframe)
+    // MACHINE À CHAOS
     const startBtn = document.getElementById('start-chaos-btn');
     startBtn.addEventListener('click', () => {
         if (chaosTimer) {
@@ -187,7 +206,7 @@
             startBtn.classList.remove('active');
         } else {
             if (playlist.length === 0) {
-                alert("Ajoute des sons d'abord !");
+                alert("Ajoute des sons d'abord (clique sur les boutons violets pour tester vite) !");
                 return;
             }
             startBtn.innerText = "STOP LE BORDEL";
@@ -197,17 +216,16 @@
     });
 
     function triggerChaos() {
+        if (!chaosTimer && !startBtn.classList.contains('active')) return;
+        
         const min = parseInt(document.getElementById('interval-min').value) || 1;
         const max = parseInt(document.getElementById('interval-max').value) || 5;
 
-        // Choix random du son
         const randomSound = playlist[Math.floor(Math.random() * playlist.length)];
         
-        // Lecture HTML5 native instantanée
         const audio = new Audio(randomSound.url);
-        audio.play().catch(e => console.log("L'autoplay a bloqué ce coup-ci, clique sur la page."));
+        audio.play().catch(e => console.log("Clique sur la page pour activer l'audio."));
 
-        // Prochain trigger
         const nextTime = (Math.random() * (max - min) + min) * 1000;
         chaosTimer = setTimeout(triggerChaos, nextTime);
     }
