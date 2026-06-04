@@ -120,13 +120,13 @@
     <div id="status-text" class="status"></div>
 
     <div class="info-list">
-        <strong>📦 Fichiers locaux configurés (<span id="total-count">0</span>) :</strong>
+        <strong>📦 Fichiers locaux détectés (<span id="total-count">0</span>) :</strong>
         <ul id="liste-sons"></ul>
     </div>
 </div>
 
 <script>
-    // Liste calquée EXACTEMENT sur ta deuxième capture d'écran
+    // Liste calquée EXACTEMENT sur tes fichiers présents dans ton repo GitHub
     const sonsDeMeme = [
         "nudgemega.mp3",
         "applepay.mp3",
@@ -144,7 +144,7 @@
     let chaosTimer = null;
     let audioCtx = null;
 
-    // Injection visuelle de la liste pour validation de bon chargement
+    // Remplissage de la liste à l'écran
     document.getElementById('total-count').innerText = sonsDeMeme.length;
     const listEl = document.getElementById('liste-sons');
     sonsDeMeme.forEach(son => {
@@ -164,9 +164,9 @@
 
     function jouerUnSon() {
         initAudio();
-        // Choix d'un SEUL son unique
         const sonChoisi = sonsDeMeme[Math.floor(Math.random() * sonsDeMeme.length)];
         
+        // Appeler directement le fichier du même dossier racine
         const audio = new Audio(sonChoisi);
         audio.play().catch(e => console.log("L'autoplay bloque encore, reclique sur le bouton principal."));
         
@@ -188,7 +188,6 @@
             btn.innerText = "ARRÊTER LE CHAOS";
             btn.classList.add('active');
             statusText.innerText = "Initialisation...";
-            // On lance le premier cycle d'attente
             planifierProchainSon();
         }
     }
@@ -203,9 +202,16 @@
         if (min < 0.1) min = 0.1;
         if (max < min) max = min;
 
-        // Calcul du délai unique en secondes converti en millisecondes
         const delaiRandom = (Math.random() * (max - min) + min) * 1000;
         
         document.getElementById('status-text').innerText = `⏳ Prochain son dans ${(delaiRandom / 1000).toFixed(1)}s...`;
 
-        // On
+        chaosTimer = setTimeout(() => {
+            jouerUnSon();
+            planifierProchainSon();
+        }, delaiRandom);
+    }
+</script>
+
+</body>
+</html>
