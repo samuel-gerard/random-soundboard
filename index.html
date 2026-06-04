@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chaos Soundboard Officielle</title>
+    <title>Chaos Soundboard Pro</title>
     <style>
         body {
             background: #121212;
@@ -21,24 +21,41 @@
             border-radius: 10px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            max-width: 400px;
+            max-width: 420px;
             width: 100%;
         }
         .inputs {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 15px;
             margin: 20px 0;
         }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        label {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
         input {
-            width: 70px;
-            padding: 8px;
+            width: 80px;
+            padding: 10px;
             background: #333;
-            border: none;
+            border: 2px solid #444;
             color: white;
             border-radius: 5px;
             text-align: center;
             font-size: 16px;
+            font-weight: bold;
+        }
+        input:focus {
+            border-color: #00adb5;
+            outline: none;
         }
         button {
             width: 100%;
@@ -48,9 +65,9 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            background: #e10600; /* Rouge F1 */
+            background: #00adb5;
             color: white;
-            box-shadow: 0 4px 0 #990400;
+            box-shadow: 0 4px 0 #00666b;
             transition: all 0.1s;
         }
         button:active {
@@ -62,61 +79,77 @@
             box-shadow: 0 4px 0 #1e7e34;
         }
         .info-list {
-            font-size: 12px;
-            color: #aaa;
+            font-size: 11px;
+            color: #888;
             margin-top: 20px;
             text-align: left;
             background: #151515;
             padding: 12px;
             border-radius: 5px;
-            border-left: 3px solid #e10600;
+            max-height: 120px;
+            overflow-y: auto;
         }
-        .info-list ul { margin: 5px 0 0 0; padding-left: 20px; }
+        .info-list ul { margin: 5px 0 0 0; padding-left: 15px; }
+        .status {
+            font-size: 13px;
+            color: #00adb5;
+            margin-top: 10px;
+            font-weight: bold;
+            height: 18px;
+        }
     </style>
 </head>
 <body>
 
 <div class="box">
-    <h1>🏎️ Chaos Soundboard Premium</h1>
-    <p>Intervalles configurables en secondes.</p>
+    <h1>🔊 Chaos Régulier</h1>
+    <p>Un seul son au hasard toutes les X secondes.</p>
     
     <div class="inputs">
-        <div>
-            <label style="display:block;font-size:12px;margin-bottom:5px;">Min (sec)</label>
-            <input type="number" id="time-min" value="0.2" step="0.1" min="0.1">
+        <div class="input-group">
+            <label>Min (sec)</label>
+            <input type="number" id="time-min" value="2" step="0.5" min="0.1">
         </div>
-        <div>
-            <label style="display:block;font-size:12px;margin-bottom:5px;">Max (sec)</label>
-            <input type="number" id="time-max" value="1.5" step="0.1" min="0.1">
+        <div class="input-group">
+            <label>Max (sec)</label>
+            <input type="number" id="time-max" value="5" step="0.5" min="0.1">
         </div>
     </div>
 
     <button id="chaos-btn" onclick="toggleChaos()">DÉMARRER LE CHAOS</button>
+    <div id="status-text" class="status"></div>
 
     <div class="info-list">
-        <strong>🔊 Playlist chargée en local :</strong>
+        <strong>📦 Fichiers locaux configurés (<span id="total-count">0</span>) :</strong>
         <ul id="liste-sons"></ul>
     </div>
 </div>
 
 <script>
-    // Configuration exacte avec les noms de tes fichiers
+    // Liste calquée EXACTEMENT sur ta deuxième capture d'écran
     const sonsDeMeme = [
+        "nudgemega.mp3",
+        "applepay.mp3",
+        "sentmessage_1.mp3",
+        "slack-new-message.mp3",
+        "snapchat-message.mp3",
+        "facebook-chat-sound-hd.mp3",
+        "pop_1lzEdx1.mp3",
+        "msn-sound_1.mp3",
         "tu-tu-tu-du-max-verstappen.mp3",
         "discord-notification.mp3",
-        "ca-va-peter_nR3lwZJ.mp3",
-        "m-e-o-w.mp3",
-        "cat-iphone-ringtone.mp3"
+        "m-e-o-w.mp3"
     ];
 
     let chaosTimer = null;
     let audioCtx = null;
 
-    // Remplir la liste visuelle au démarrage
+    // Injection visuelle de la liste pour validation de bon chargement
+    document.getElementById('total-count').innerText = sonsDeMeme.length;
     const listEl = document.getElementById('liste-sons');
     sonsDeMeme.forEach(son => {
         const li = document.createElement('li');
-        li.innerText = son.replace('.mp3', '');
+        li.innerText = son;
         listEl.appendChild(li);
     });
 
@@ -129,48 +162,50 @@
         }
     }
 
-    function jouerMemeRandom() {
+    function jouerUnSon() {
         initAudio();
-
+        // Choix d'un SEUL son unique
         const sonChoisi = sonsDeMeme[Math.floor(Math.random() * sonsDeMeme.length)];
         
-        // Lecture locale (zéro blocage réseau/CORS)
         const audio = new Audio(sonChoisi);
-        audio.play().catch(e => console.log("L'autoplay bloque ? Clique sur le gros bouton."));
+        audio.play().catch(e => console.log("L'autoplay bloque encore, reclique sur le bouton principal."));
+        
+        document.getElementById('status-text').innerText = `💥 Lecture de : ${sonChoisi}`;
     }
 
     function toggleChaos() {
         const btn = document.getElementById('chaos-btn');
-        initAudio(); // Débloque le flux audio directement au clic
+        const statusText = document.getElementById('status-text');
+        initAudio(); 
 
         if (chaosTimer) {
             clearTimeout(chaosTimer);
             chaosTimer = null;
             btn.innerText = "DÉMARRER LE CHAOS";
             btn.classList.remove('active');
+            statusText.innerText = "Machine arrêtée.";
         } else {
             btn.innerText = "ARRÊTER LE CHAOS";
             btn.classList.add('active');
-            runLoop();
+            statusText.innerText = "Initialisation...";
+            // On lance le premier cycle d'attente
+            planifierProchainSon();
         }
     }
 
-    function runLoop() {
+    function planifierProchainSon() {
         const btn = document.getElementById('chaos-btn');
         if (!btn.classList.contains('active')) return;
 
-        jouerMemeRandom();
-
-        let min = parseFloat(document.getElementById('time-min').value) || 0.1;
-        let max = parseFloat(document.getElementById('time-max').value) || 1.0;
+        let min = parseFloat(document.getElementById('time-min').value) || 1;
+        let max = parseFloat(document.getElementById('time-max').value) || 5;
         
         if (min < 0.1) min = 0.1;
         if (max < min) max = min;
 
-        const nextTrigger = (Math.random() * (max - min) + min) * 1000;
-        chaosTimer = setTimeout(runLoop, nextTrigger);
-    }
-</script>
+        // Calcul du délai unique en secondes converti en millisecondes
+        const delaiRandom = (Math.random() * (max - min) + min) * 1000;
+        
+        document.getElementById('status-text').innerText = `⏳ Prochain son dans ${(delaiRandom / 1000).toFixed(1)}s...`;
 
-</body>
-</html>
+        // On
