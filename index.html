@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La Soundboard Increvable</title>
+    <title>Chaos Soundboard Officielle</title>
     <style>
         body {
             background: #121212;
             color: white;
-            font-family: sans-serif;
+            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -21,84 +21,128 @@
             border-radius: 10px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            max-width: 400px;
+            width: 100%;
+        }
+        .inputs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        input {
+            width: 70px;
+            padding: 8px;
+            background: #333;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 16px;
         }
         button {
-            padding: 15px 25px;
-            font-size: 16px;
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
             font-weight: bold;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            margin: 10px;
-            transition: transform 0.1s;
+            background: #e10600; /* Rouge F1 */
+            color: white;
+            box-shadow: 0 4px 0 #990400;
+            transition: all 0.1s;
         }
-        button:active { transform: scale(0.95); }
-        .btn-sound { background: #00adb5; color: white; }
-        .btn-chaos { background: #ff5722; color: white; }
-        .btn-chaos.active { background: #28a745; }
+        button:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        button.active {
+            background: #28a745;
+            box-shadow: 0 4px 0 #1e7e34;
+        }
+        .info-list {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 20px;
+            text-align: left;
+            background: #151515;
+            padding: 12px;
+            border-radius: 5px;
+            border-left: 3px solid #e10600;
+        }
+        .info-list ul { margin: 5px 0 0 0; padding-left: 20px; }
     </style>
 </head>
 <body>
 
 <div class="box">
-    <h1>🔊 Soundboard 100% Synthétique</h1>
-    <p>Aucun chargement, aucun serveur, zéro erreur.</p>
+    <h1>🏎️ Chaos Soundboard Premium</h1>
+    <p>Intervalles configurables en secondes.</p>
     
-    <button class="btn-sound" onclick="jouerSonRandom()">🎵 FAIRE UN SON</button>
-    
-    <hr style="border: 1px solid #333; margin: 20px 0;">
-    
-    <button id="chaos-btn" class="btn-chaos" onclick="toggleChaos()">DÉMARRER LE CHAOS</button>
+    <div class="inputs">
+        <div>
+            <label style="display:block;font-size:12px;margin-bottom:5px;">Min (sec)</label>
+            <input type="number" id="time-min" value="0.2" step="0.1" min="0.1">
+        </div>
+        <div>
+            <label style="display:block;font-size:12px;margin-bottom:5px;">Max (sec)</label>
+            <input type="number" id="time-max" value="1.5" step="0.1" min="0.1">
+        </div>
+    </div>
+
+    <button id="chaos-btn" onclick="toggleChaos()">DÉMARRER LE CHAOS</button>
+
+    <div class="info-list">
+        <strong>🔊 Playlist chargée en local :</strong>
+        <ul id="liste-sons"></ul>
+    </div>
 </div>
 
 <script>
+    // Configuration exacte avec les noms de tes fichiers
+    const sonsDeMeme = [
+        "tu-tu-tu-du-max-verstappen.mp3",
+        "discord-notification.mp3",
+        "ca-va-peter_nR3lwZJ.mp3",
+        "m-e-o-w.mp3",
+        "cat-iphone-ringtone.mp3"
+    ];
+
     let chaosTimer = null;
     let audioCtx = null;
 
-    // Initialise l'audio au premier clic (obligation des navigateurs)
+    // Remplir la liste visuelle au démarrage
+    const listEl = document.getElementById('liste-sons');
+    sonsDeMeme.forEach(son => {
+        const li = document.createElement('li');
+        li.innerText = son.replace('.mp3', '');
+        listEl.appendChild(li);
+    });
+
     function initAudio() {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
     }
 
-    // Génère un son électronique à la volée (Zéro fichier MP3 !)
-    function jouerSon(frequence, duree, type = 'sine') {
+    function jouerMemeRandom() {
         initAudio();
+
+        const sonChoisi = sonsDeMeme[Math.floor(Math.random() * sonsDeMeme.length)];
         
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-
-        oscillator.type = type; // 'sine', 'square', 'sawtooth', 'triangle'
-        oscillator.frequency.value = frequence;
-
-        // Gestion du volume pour éviter les "clics" de fin de son
-        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duree);
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + duree);
+        // Lecture locale (zéro blocage réseau/CORS)
+        const audio = new Audio(sonChoisi);
+        audio.play().catch(e => console.log("L'autoplay bloque ? Clique sur le gros bouton."));
     }
 
-    // Crée une note au pif
-    function jouerSonRandom() {
-        const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25]; // Gamme de Do
-        const types = ['sine', 'triangle', 'sawtooth'];
-        
-        const freqRandom = notes[Math.floor(Math.random() * notes.length)];
-        const typeRandom = types[Math.floor(Math.random() * types.length)];
-        const dureeRandom = Math.random() * 0.4 + 0.1; // Entre 0.1 et 0.5 secondes
-
-        jouerSon(freqRandom, dureeRandom, typeRandom);
-    }
-
-    // Gestion de la boucle de l'enfer
     function toggleChaos() {
         const btn = document.getElementById('chaos-btn');
-        
+        initAudio(); // Débloque le flux audio directement au clic
+
         if (chaosTimer) {
             clearTimeout(chaosTimer);
             chaosTimer = null;
@@ -107,17 +151,24 @@
         } else {
             btn.innerText = "ARRÊTER LE CHAOS";
             btn.classList.add('active');
-            boucleChaos();
+            runLoop();
         }
     }
 
-    function boucleChaos() {
-        jouerSonRandom();
+    function runLoop() {
+        const btn = document.getElementById('chaos-btn');
+        if (!btn.classList.contains('active')) return;
+
+        jouerMemeRandom();
+
+        let min = parseFloat(document.getElementById('time-min').value) || 0.1;
+        let max = parseFloat(document.getElementById('time-max').value) || 1.0;
         
-        // Intervalle random entre 0.3 et 1.5 secondes
-        const prochainIntervalle = (Math.random() * 1.2 + 0.3) * 1000;
-        
-        chaosTimer = setTimeout(boucleChaos, prochainIntervalle);
+        if (min < 0.1) min = 0.1;
+        if (max < min) max = min;
+
+        const nextTrigger = (Math.random() * (max - min) + min) * 1000;
+        chaosTimer = setTimeout(runLoop, nextTrigger);
     }
 </script>
 
