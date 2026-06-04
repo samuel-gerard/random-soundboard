@@ -3,234 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chaos Soundboard Immortelle</title>
+    <title>La Soundboard Increvable</title>
     <style>
-        :root {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --accent: #ff5722;
-            --text: #ffffff;
-        }
-
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text);
-            padding: 20px;
+            background: #121212;
+            color: white;
+            font-family: sans-serif;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
+            height: 100vh;
+            margin: 0;
         }
-
-        .container { width: 100%; max-width: 600px; }
-        h1 { text-align: center; color: var(--accent); }
-        
-        .panel {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        .box {
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
-
-        .form-group { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-        input, button { padding: 10px; border-radius: 5px; border: none; font-size: 14px; }
-        input { background: #333; color: white; flex: 1; }
-        button { background: var(--accent); color: white; cursor: pointer; font-weight: bold; }
-        button.active { background: #28a745; }
-        button.preset-btn { background: #4e34e1; font-size: 12px; padding: 8px 12px; }
-
-        .search-results {
-            max-height: 150px;
-            overflow-y: auto;
-            background: #252525;
+        button {
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
             border-radius: 5px;
-            padding: 5px;
-            margin-top: 5px;
-            display: none;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.1s;
         }
-
-        .search-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px;
-            border-bottom: 1px solid #333;
-            align-items: center;
-        }
-
-        .sounds-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
-        .sound-badge {
-            background: #2a2a2a;
-            padding: 8px 12px;
-            border-radius: 20px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            border: 1px solid var(--accent);
-        }
-        .sound-badge span { font-size: 13px; }
-        .sound-badge button { padding: 2px 6px; background: #dc3545; font-size: 10px; }
+        button:active { transform: scale(0.95); }
+        .btn-sound { background: #00adb5; color: white; }
+        .btn-chaos { background: #ff5722; color: white; }
+        .btn-chaos.active { background: #28a745; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🔊 Chaos Soundboard Garantie 100% No-CORS</h1>
-
-    <div class="panel">
-        <h3>⚡ 1. Ajoute des sons certifiés fonctionnels</h3>
-        <div class="form-group" style="gap: 8px;">
-            <button class="preset-btn" onclick="addPreset('Heater 1', 'https://s3.amazonaws.com/freecodecamp/drums/Heater-1.mp3')">🎹 Heater 1</button>
-            <button class="preset-btn" onclick="addPreset('Heater 2', 'https://s3.amazonaws.com/freecodecamp/drums/Heater-2.mp3')">🎹 Heater 2</button>
-            <button class="preset-btn" onclick="addPreset('Clap', 'https://s3.amazonaws.com/freecodecamp/drums/Heater-6.mp3')">👏 Clap</button>
-            <button class="preset-btn" onclick="addPreset('Open HH', 'https://s3.amazonaws.com/freecodecamp/drums/Dsc_Oh.mp3')">🥁 Cymbal</button>
-            <button class="preset-btn" onclick="addPreset('Rire', 'https://upload.wikimedia.org/wikipedia/commons/c/cc/Laughing_crowd.ogg')">😂 Rire</button>
-            <button class="preset-btn" onclick="addPreset('Alarme', 'https://upload.wikimedia.org/wikipedia/commons/1/13/Industrial_Alarm.ogg')">🚨 Alarme</button>
-        </div>
-    </div>
-
-    <div class="panel">
-        <h3>🔍 2. Chercher d'autres bruits (Freesound HQ)</h3>
-        <div class="form-group">
-            <input type="text" id="search-input" placeholder="Ex: laser, explosion, dog, click...">
-            <button id="search-btn">Chercher</button>
-        </div>
-        <div class="search-results" id="search-results"></div>
-    </div>
-
-    <div class="panel">
-        <h3>⚙️ 3. Configurer les intervalles</h3>
-        <div class="form-group">
-            <label style="align-self: center;">Intervalle (sec) :</label>
-            <input type="number" id="interval-min" value="1" style="max-width: 60px;">
-            <input type="number" id="interval-max" value="4" style="max-width: 60px;">
-            <button id="start-chaos-btn" style="flex: 1;">DÉMARRER LE BORDEL</button>
-        </div>
-    </div>
-
-    <div class="panel">
-        <h3>Sons dans la machine (<span id="sound-count">0</span>)</h3>
-        <div class="sounds-list" id="sounds-container"></div>
-    </div>
+<div class="box">
+    <h1>🔊 Soundboard 100% Synthétique</h1>
+    <p>Aucun chargement, aucun serveur, zéro erreur.</p>
+    
+    <button class="btn-sound" onclick="jouerSonRandom()">🎵 FAIRE UN SON</button>
+    
+    <hr style="border: 1px solid #333; margin: 20px 0;">
+    
+    <button id="chaos-btn" class="btn-chaos" onclick="toggleChaos()">DÉMARRER LE CHAOS</button>
 </div>
 
 <script>
-    let playlist = [];
     let chaosTimer = null;
+    let audioCtx = null;
 
-    // RECHERCHE VIA FREESOUND AVEC AUDIO AVEC AUTORISATION CROSSORIGIN
-    document.getElementById('search-btn').addEventListener('click', async () => {
-        const query = document.getElementById('search-input').value.trim();
-        if (!query) return;
-
-        const resultsContainer = document.getElementById('search-results');
-        resultsContainer.innerHTML = "Recherche en cours...";
-        resultsContainer.style.display = "block";
-
-        try {
-            const res = await fetch(`https://freesound.org/apiv2/search/text/?query=${encodeURIComponent(query)}&token=6M9Hshg04oR6pE40t8XpLpL66O77bVb7O9oP9pP2&fields=name,previews`);
-            const data = await res.json();
-            
-            resultsContainer.innerHTML = "";
-            if (!data.results || data.results.length === 0) {
-                resultsContainer.innerHTML = "Aucun son trouvé. (Cherche en anglais)";
-                return;
-            }
-
-            data.results.slice(0, 5).forEach(sound => {
-                const mp3Url = sound.previews['preview-hq-mp3'] || sound.previews['preview-lq-mp3'];
-                const div = document.createElement('div');
-                div.className = 'search-item';
-                div.innerHTML = `
-                    <span style="font-size:12px; max-width:70%; overflow:hidden;">🎵 ${sound.name.substring(0, 30)}</span>
-                    <div>
-                        <button onclick="previewSound('${mp3Url}')">▶️</button>
-                        <button class="add-btn" onclick="addSound('${sound.name.substring(0,12)}', '${mp3Url}')">+</button>
-                    </div>
-                `;
-                resultsContainer.appendChild(div);
-            });
-        } catch (e) {
-            resultsContainer.innerHTML = "Erreur de recherche.";
+    // Initialise l'audio au premier clic (obligation des navigateurs)
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
-    });
-
-    function addPreset(name, url) {
-        playlist.push({ name, url });
-        updateUI();
     }
 
-    // Création de l'objet audio avec l'attribut anonyme pour casser le CORS/ORB
-    function playAudioSecure(url) {
-        const audio = new Audio();
-        audio.src = url;
-        audio.crossOrigin = "anonymous"; // Force le navigateur à accepter si le serveur dit OK
-        audio.play().catch(e => console.log("Clique sur la page pour activer le son"));
+    // Génère un son électronique à la volée (Zéro fichier MP3 !)
+    function jouerSon(frequence, duree, type = 'sine') {
+        initAudio();
+        
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.type = type; // 'sine', 'square', 'sawtooth', 'triangle'
+        oscillator.frequency.value = frequence;
+
+        // Gestion du volume pour éviter les "clics" de fin de son
+        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duree);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + duree);
     }
 
-    function previewSound(url) {
-        playAudioSecure(url);
+    // Crée une note au pif
+    function jouerSonRandom() {
+        const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25]; // Gamme de Do
+        const types = ['sine', 'triangle', 'sawtooth'];
+        
+        const freqRandom = notes[Math.floor(Math.random() * notes.length)];
+        const typeRandom = types[Math.floor(Math.random() * types.length)];
+        const dureeRandom = Math.random() * 0.4 + 0.1; // Entre 0.1 et 0.5 secondes
+
+        jouerSon(freqRandom, dureeRandom, typeRandom);
     }
 
-    function addSound(name, url) {
-        playlist.push({ name, url });
-        document.getElementById('search-results').style.display = "none";
-        document.getElementById('search-input').value = "";
-        updateUI();
-    }
-
-    function updateUI() {
-        const container = document.getElementById('sounds-container');
-        document.getElementById('sound-count').innerText = playlist.length;
-        container.innerHTML = '';
-
-        playlist.forEach((sound, index) => {
-            const badge = document.createElement('div');
-            badge.className = 'sound-badge';
-            badge.innerHTML = `
-                <span>${sound.name}</span>
-                <button onclick="removeSound(${index})">X</button>
-            `;
-            container.appendChild(badge);
-        });
-    }
-
-    function removeSound(index) {
-        playlist.splice(index, 1);
-        updateUI();
-    }
-
-    // MACHINE À CHAOS
-    const startBtn = document.getElementById('start-chaos-btn');
-    startBtn.addEventListener('click', () => {
+    // Gestion de la boucle de l'enfer
+    function toggleChaos() {
+        const btn = document.getElementById('chaos-btn');
+        
         if (chaosTimer) {
             clearTimeout(chaosTimer);
             chaosTimer = null;
-            startBtn.innerText = "DÉMARRER LE BORDEL";
-            startBtn.classList.remove('active');
+            btn.innerText = "DÉMARRER LE CHAOS";
+            btn.classList.remove('active');
         } else {
-            if (playlist.length === 0) {
-                alert("Ajoute des sons d'abord en cliquant sur les boutons violets !");
-                return;
-            }
-            startBtn.innerText = "STOP LE BORDEL";
-            startBtn.classList.add('active');
-            triggerChaos();
+            btn.innerText = "ARRÊTER LE CHAOS";
+            btn.classList.add('active');
+            boucleChaos();
         }
-    });
+    }
 
-    function triggerChaos() {
-        if (!startBtn.classList.contains('active')) return;
+    function boucleChaos() {
+        jouerSonRandom();
         
-        const min = parseInt(document.getElementById('interval-min').value) || 1;
-        const max = parseInt(document.getElementById('interval-max').value) || 4;
-
-        const randomSound = playlist[Math.floor(Math.random() * playlist.length)];
-        playAudioSecure(randomSound.url);
-
-        const nextTime = (Math.random() * (max - min) + min) * 1000;
-        chaosTimer = setTimeout(triggerChaos, nextTime);
+        // Intervalle random entre 0.3 et 1.5 secondes
+        const prochainIntervalle = (Math.random() * 1.2 + 0.3) * 1000;
+        
+        chaosTimer = setTimeout(boucleChaos, prochainIntervalle);
     }
 </script>
+
 </body>
 </html>
