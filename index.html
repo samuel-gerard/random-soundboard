@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chaos Soundboard Pro</title>
+    <title>Super Chaos Soundboard</title>
     <style>
         body {
             background: #121212;
@@ -36,7 +36,7 @@
             align-items: center;
         }
         label {
-            font-size: 12px;
+            font-size: 11px;
             color: #aaa;
             margin-bottom: 5px;
             text-transform: uppercase;
@@ -53,10 +53,27 @@
             font-size: 16px;
             font-weight: bold;
         }
-        input:focus {
-            border-color: #00adb5;
-            outline: none;
+        input:focus { border-color: #00adb5; outline: none; }
+        
+        /* Selecteur de Mode */
+        .mode-selector {
+            background: #151515;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            border: 1px solid #333;
         }
+        .mode-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .mode-option input { width: auto; cursor: pointer; }
+
         button {
             width: 100%;
             padding: 15px;
@@ -86,13 +103,13 @@
             background: #151515;
             padding: 12px;
             border-radius: 5px;
-            max-height: 120px;
+            max-height: 100px;
             overflow-y: auto;
         }
         .info-list ul { margin: 5px 0 0 0; padding-left: 15px; }
         .status {
             font-size: 13px;
-            color: #00adb5;
+            color: #ff5722;
             margin-top: 10px;
             font-weight: bold;
             height: 18px;
@@ -102,31 +119,42 @@
 <body>
 
 <div class="box">
-    <h1>🔊 Chaos Régulier</h1>
-    <p>Un seul son au hasard toutes les X secondes.</p>
+    <h1>🔊 Laboratoire du Chaos</h1>
+    
+    <!-- CHOIX DU MODE -->
+    <div class="mode-selector">
+        <label class="mode-option">
+            <input type="radio" name="engine-mode" value="mp3" checked onchange="switchMode()">
+            📁 Mèmes MP3 (Régulier)
+        </label>
+        <label class="mode-option">
+            <input type="radio" name="engine-mode" value="synth" onchange="switchMode()">
+            ⚡ Synthé (Chaos Pop)
+        </label>
+    </div>
     
     <div class="inputs">
         <div class="input-group">
-            <label>Min (sec)</label>
-            <input type="number" id="time-min" value="2" step="0.5" min="0.1">
+            <label id="lbl-min">Min (sec)</label>
+            <input type="number" id="time-min" value="1.0" step="0.1" min="0.05">
         </div>
         <div class="input-group">
-            <label>Max (sec)</label>
-            <input type="number" id="time-max" value="5" step="0.5" min="0.1">
+            <label id="lbl-max">Max (sec)</label>
+            <input type="number" id="time-max" value="3.0" step="0.1" min="0.05">
         </div>
     </div>
 
-    <button id="chaos-btn" onclick="toggleChaos()">DÉMARRER LE CHAOS</button>
+    <button id="chaos-btn" onclick="toggleChaos()">DÉMARRER LE BORDEL</button>
     <div id="status-text" class="status"></div>
 
-    <div class="info-list">
-        <strong>📦 Fichiers locaux détectés (<span id="total-count">0</span>) :</strong>
+    <div class="info-list" id="playlist-box">
+        <strong>📦 Fichiers MP3 configurés (<span id="total-count">0</span>) :</strong>
         <ul id="liste-sons"></ul>
     </div>
 </div>
 
 <script>
-    // Liste calquée EXACTEMENT sur tes fichiers présents dans ton repo GitHub
+    // Liste mise à jour (Sans Max Verstappen)
     const sonsDeMeme = [
         "nudgemega.mp3",
         "applepay.mp3",
@@ -136,7 +164,6 @@
         "facebook-chat-sound-hd.mp3",
         "pop_1lzEdx1.mp3",
         "msn-sound_1.mp3",
-        "tu-tu-tu-du-max-verstappen.mp3",
         "discord-notification.mp3",
         "m-e-o-w.mp3"
     ];
@@ -144,7 +171,7 @@
     let chaosTimer = null;
     let audioCtx = null;
 
-    // Remplissage de la liste à l'écran
+    // Remplissage initial de la liste MP3
     document.getElementById('total-count').innerText = sonsDeMeme.length;
     const listEl = document.getElementById('liste-sons');
     sonsDeMeme.forEach(son => {
@@ -162,17 +189,64 @@
         }
     }
 
-    function jouerUnSon() {
-        initAudio();
-        const sonChoisi = sonsDeMeme[Math.floor(Math.random() * sonsDeMeme.length)];
+    // Changement visuel selon le mode sélectionné
+    function switchMode() {
+        const mode = document.querySelector('input[name="engine-mode"]:checked').value;
+        const playlistBox = document.getElementById('playlist-box');
+        const btn = document.getElementById('chaos-btn');
         
-        // Appeler directement le fichier du même dossier racine
-        const audio = new Audio(sonChoisi);
-        audio.play().catch(e => console.log("L'autoplay bloque encore, reclique sur le bouton principal."));
-        
-        document.getElementById('status-text').innerText = `💥 Lecture de : ${sonChoisi}`;
+        if (mode === 'synth') {
+            playlistBox.style.display = 'none';
+            btn.style.background = '#ff5722';
+            btn.style.boxShadow = '0 4px 0 #b3360e';
+        } else {
+            playlistBox.style.display = 'block';
+            btn.style.background = '#00adb5';
+            btn.style.boxShadow = '0 4px 0 #00666b';
+        }
     }
 
+    // --- GENERATEUR SYNTHETIQUE (ANCIENNE VERSION SANS MP3) ---
+    function triggerSynthBoom() {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        // Formes d'ondes et fréquences totalement aléatoires pour que ça pop de partout
+        const types = ['sine', 'square', 'sawtooth', 'triangle'];
+        osc.type = types[Math.floor(Math.random() * types.length)];
+        
+        const baseFreq = Math.random() * 800 + 100; 
+        const duration = Math.random() * 0.3 + 0.1;
+
+        osc.frequency.setValueAtTime(baseFreq, audioCtx.currentTime);
+        // Effet glissant aléatoire (un coup aigu, un coup grave)
+        if(Math.random() > 0.5) {
+            osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        } else {
+            osc.frequency.linearRampToValueAtTime(baseFreq * 2, audioCtx.currentTime + duration);
+        }
+        
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime); // Volume modéré pour la superposition
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    // --- LECTEUR MP3 UNIQUE ---
+    function jouerUnMemeMP3() {
+        initAudio();
+        const sonChoisi = sonsDeMeme[Math.floor(Math.random() * sonsDeMeme.length)];
+        const audio = new Audio(sonChoisi);
+        audio.play().catch(e => console.log("L'autoplay bloque ? Clic requis."));
+        document.getElementById('status-text').innerText = `💥 MP3 : ${sonChoisi}`;
+    }
+
+    // --- GESTION DE LA BOUCLE ---
     function toggleChaos() {
         const btn = document.getElementById('chaos-btn');
         const statusText = document.getElementById('status-text');
@@ -181,35 +255,45 @@
         if (chaosTimer) {
             clearTimeout(chaosTimer);
             chaosTimer = null;
-            btn.innerText = "DÉMARRER LE CHAOS";
+            btn.innerText = "DÉMARRER LE BORDEL";
             btn.classList.remove('active');
             statusText.innerText = "Machine arrêtée.";
+            switchMode(); // Remet la couleur du mode
         } else {
             btn.innerText = "ARRÊTER LE CHAOS";
             btn.classList.add('active');
-            statusText.innerText = "Initialisation...";
-            planifierProchainSon();
+            statusText.innerText = "Calcul du premier saut...";
+            runChaosEngine();
         }
     }
 
-    function planifierProchainSon() {
+    function runChaosEngine() {
         const btn = document.getElementById('chaos-btn');
         if (!btn.classList.contains('active')) return;
 
-        let min = parseFloat(document.getElementById('time-min').value) || 1;
-        let max = parseFloat(document.getElementById('time-max').value) || 5;
+        const mode = document.querySelector('input[name="engine-mode"]:checked').value;
+
+        // Déclenchement du son selon le mode
+        if (mode === 'mp3') {
+            jouerUnMemeMP3();
+        } else {
+            triggerSynthBoom();
+            document.getElementById('status-text').innerText = `⚡ Pop Synthétique !`;
+        }
+
+        // Récupération des fréquences de tir
+        let min = parseFloat(document.getElementById('time-min').value) || 0.2;
+        let max = parseFloat(document.getElementById('time-max').value) || 2.0;
         
-        if (min < 0.1) min = 0.1;
+        // Sécurité anti-crash
+        if (min < 0.02) min = 0.02;
         if (max < min) max = min;
 
-        const delaiRandom = (Math.random() * (max - min) + min) * 1000;
-        
-        document.getElementById('status-text').innerText = `⏳ Prochain son dans ${(delaiRandom / 1000).toFixed(1)}s...`;
+        const nextTrigger = (Math.random() * (max - min) + min) * 1000;
 
-        chaosTimer = setTimeout(() => {
-            jouerUnSon();
-            planifierProchainSon();
-        }, delaiRandom);
+        // Si on est en mode Synth et qu'on a réglé très bas (ex: 0.1 / 0.1), 
+        // les bips vont s'enchaîner tellement vite qu'ils vont se superposer magnifiquement.
+        chaosTimer = setTimeout(runChaosEngine, nextTrigger);
     }
 </script>
 
